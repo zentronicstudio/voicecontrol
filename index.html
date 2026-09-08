@@ -213,7 +213,9 @@ signInAnonymously(auth)
   firebaseStatus.innerText =
     "Firebase Connected";
 
-  console.log("Firebase anonymous login success");
+  console.log(
+    "Firebase anonymous login success"
+  );
 
 })
 
@@ -232,7 +234,7 @@ signInAnonymously(auth)
 });
 
 
-// ================= SEND COMMAND TO FIREBASE =================
+// ================= SEND COMMAND =================
 
 async function sendCommand(command) {
 
@@ -253,7 +255,9 @@ async function sendCommand(command) {
 
       command: command,
 
-      timestamp: Date.now()
+      // IMPORTANT:
+      // save timestamp as STRING
+      timestamp: Date.now().toString()
 
     });
 
@@ -277,7 +281,6 @@ async function sendCommand(command) {
     );
 
   }
-
 }
 
 
@@ -288,6 +291,7 @@ const SpeechRecognition =
   window.webkitSpeechRecognition;
 
 let recognition;
+
 
 if (SpeechRecognition) {
 
@@ -319,7 +323,6 @@ if (SpeechRecognition) {
     micButton.classList.add(
       "listening"
     );
-
   };
 
 
@@ -336,7 +339,6 @@ if (SpeechRecognition) {
       text;
 
     processCommand(text);
-
   };
 
 
@@ -349,7 +351,6 @@ if (SpeechRecognition) {
     micButton.classList.remove(
       "listening"
     );
-
   };
 
 
@@ -367,18 +368,14 @@ if (SpeechRecognition) {
 
       statusText.innerText =
         "Tap microphone";
-
     }
-
   };
-
 }
 
 else {
 
   statusText.innerText =
     "Speech recognition not supported";
-
 }
 
 
@@ -399,9 +396,7 @@ function() {
   catch(error) {
 
     console.log(error);
-
   }
-
 };
 
 
@@ -415,8 +410,7 @@ function processCommand(text) {
     .trim();
 
 
-  // ================= NORMALIZE SWITCH ONE =================
-
+  // normalize switch one
   text =
     text.replace(
       /\bswitch 1\b/g,
@@ -430,8 +424,7 @@ function processCommand(text) {
     );
 
 
-  // ================= NORMALIZE SWITCH TWO =================
-
+  // normalize switch two
   text =
     text.replace(
       /\bswitch 2\b/g,
@@ -451,8 +444,6 @@ function processCommand(text) {
     );
 
 
-  // ================= SWITCH 1 ON =================
-
   if (
     text.includes(
       "switch one on"
@@ -468,11 +459,8 @@ function processCommand(text) {
     sendCommand(
       "SWITCH_1_ON"
     );
-
   }
 
-
-  // ================= SWITCH 1 OFF =================
 
   else if (
     text.includes(
@@ -489,11 +477,8 @@ function processCommand(text) {
     sendCommand(
       "SWITCH_1_OFF"
     );
-
   }
 
-
-  // ================= SWITCH 2 ON =================
 
   else if (
     text.includes(
@@ -510,11 +495,8 @@ function processCommand(text) {
     sendCommand(
       "SWITCH_2_ON"
     );
-
   }
 
-
-  // ================= SWITCH 2 OFF =================
 
   else if (
     text.includes(
@@ -531,11 +513,8 @@ function processCommand(text) {
     sendCommand(
       "SWITCH_2_OFF"
     );
-
   }
 
-
-  // ================= UNKNOWN COMMAND =================
 
   else {
 
@@ -544,9 +523,7 @@ function processCommand(text) {
 
     commandText.innerText =
       "-";
-
   }
-
 }
 
 </script>
