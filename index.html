@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Voice Control</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f3f4f6;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.container {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 30px;
+  margin-bottom: 25px;
+}
+
+.card {
+  background: white;
+  border-radius: 24px;
+  padding: 30px 20px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+}
+
+.mic {
+  width: 140px;
+  height: 140px;
+  border: none;
+  border-radius: 50%;
+  background: #111827;
+  color: white;
+  font-size: 55px;
+  cursor: pointer;
+}
+
+.mic:active {
+  transform: scale(0.95);
+}
+
+.listening {
+  background: #dc2626;
+}
+
+#status {
+  margin-top: 25px;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+#speech {
+  margin-top: 15px;
+  min-height: 35px;
+  font-size: 20px;
+  color: #374151;
+}
+
+.result {
+  margin-top: 25px;
+  padding: 18px;
+  background: #f3f4f6;
+  border-radius: 15px;
+}
+
+#command {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.help {
+  margin-top: 25px;
+  color: #6b7280;
+  line-height: 1.8;
+  font-size: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>Voice Control</h1>
+
+  <div class="card">
+
+    <button class="mic" id="micButton" onclick="startListening()">
+      🎤
+    </button>
+
+    <div id="status">
+      Tap microphone
+    </div>
+
+    <div id="speech">
+      -
+    </div>
+
+    <div class="result">
+      <div>COMMAND</div>
+      <br>
+      <div id="command">-</div>
+    </div>
+
+    <div class="help">
+      Say:<br>
+      Switch one on<br>
+      Switch one off<br>
+      Switch two on<br>
+      Switch two off
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+const SpeechRecognition =
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
+
+let recognition;
+
+const statusText = document.getElementById("status");
+const speechText = document.getElementById("speech");
+const commandText = document.getElementById("command");
+const micButton = document.getElementById("micButton");
+
+if (SpeechRecognition) {
+
+  recognition = new SpeechRecognition();
+
+  recognition.lang = "en-US";
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.onstart = function() {
+
+    statusText.innerText = "LISTENING...";
+    speechText.innerText = "...";
+
+    micButton.classList.add("listening");
+  };
+
+
+  recognition.onresult = function(event) {
+
+    let text =
+      event.results[0][0].transcript
+      .toLowerCase()
+      .trim();
+
+    speechText.innerText = text;
+
+    processCommand(text);
+  };
+
+
+  recognition.onerror = function(event) {
+
+    statusText.innerText =
+      "ERROR: " + event.error;
+
+    micButton.classList.remove("listening");
+  };
+
+
+  recognition.onend = function() {
+
+    micButton.classList.remove("listening");
+
+    if (statusText.innerText === "LISTENING...") {
+      statusText.innerText = "Tap microphone";
+    }
+  };
+
+}
+
+else {
+
+  statusText.innerText =
+    "Speech recognition not supported";
+}
+
+
+// =====================================================
+// START LISTENING
+// =====================================================
+
+function startListening() {
+
+  if (!recognition) {
+    return;
+  }
+
+  try {
+    recognition.start();
+  }
+  catch(error) {
+    console.log(error);
+  }
+}
+
+
+// =====================================================
+// PROCESS VOICE COMMAND
+// =====================================================
+
+function processCommand(text) {
+
+  // Accept number variations
+  text = text.replace(/switch 1/g, "switch one");
+  text = text.replace(/switch 2/g, "switch two");
+
+
+  if (text.includes("switch one on")) {
+
+    statusText.innerText = "COMMAND RECOGNIZED";
+    commandText.innerText = "SWITCH 1 ON";
+
+  }
+
+  else if (text.includes("switch one off")) {
+
+    statusText.innerText = "COMMAND RECOGNIZED";
+    commandText.innerText = "SWITCH 1 OFF";
+
+  }
+
+  else if (text.includes("switch two on")) {
+
+    statusText.innerText = "COMMAND RECOGNIZED";
+    commandText.innerText = "SWITCH 2 ON";
+
+  }
+
+  else if (text.includes("switch two off")) {
+
+    statusText.innerText = "COMMAND RECOGNIZED";
+    commandText.innerText = "SWITCH 2 OFF";
+
+  }
+
+  else {
+
+    statusText.innerText = "COMMAND NOT RECOGNIZED";
+    commandText.innerText = "-";
+
+  }
+}
+
+</script>
+
+</body>
+</html>
