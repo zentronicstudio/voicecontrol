@@ -84,6 +84,12 @@ h1 {
   font-weight: bold;
 }
 
+#firebaseStatus {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
 .help {
   margin-top: 25px;
   color: #6b7280;
@@ -119,6 +125,10 @@ h1 {
       <div id="command">-</div>
     </div>
 
+    <div id="firebaseStatus">
+      Connecting Firebase...
+    </div>
+
     <div class="help">
       Say:<br>
       Switch one on<br>
@@ -131,7 +141,147 @@ h1 {
 
 </div>
 
-<script>
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+
+import {
+  getAuth,
+  signInAnonymously
+}
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  set
+}
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+
+
+// ================= FIREBASE CONFIG =================
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBUL94M7hwuMFn19xzRP4MXhv1_ENIK4t0",
+  authDomain: "voice-command-9a039.firebaseapp.com",
+  databaseURL: "https://voice-command-9a039-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "voice-command-9a039",
+  storageBucket: "voice-command-9a039.firebasestorage.app",
+  messagingSenderId: "38586778701",
+  appId: "1:38586778701:web:5061e097bf3124e1cc8804"
+};
+
+
+// ================= FIREBASE INITIALIZE =================
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+const database = getDatabase(app);
+
+let firebaseReady = false;
+
+
+// ================= HTML ELEMENTS =================
+
+const statusText =
+  document.getElementById("status");
+
+const speechText =
+  document.getElementById("speech");
+
+const commandText =
+  document.getElementById("command");
+
+const micButton =
+  document.getElementById("micButton");
+
+const firebaseStatus =
+  document.getElementById("firebaseStatus");
+
+
+// ================= FIREBASE LOGIN =================
+
+signInAnonymously(auth)
+
+.then(() => {
+
+  firebaseReady = true;
+
+  firebaseStatus.innerText =
+    "Firebase Connected";
+
+  console.log("Firebase anonymous login success");
+
+})
+
+.catch((error) => {
+
+  firebaseReady = false;
+
+  firebaseStatus.innerText =
+    "Firebase Error";
+
+  console.error(
+    "Firebase login error:",
+    error
+  );
+
+});
+
+
+// ================= SEND COMMAND TO FIREBASE =================
+
+async function sendCommand(command) {
+
+  if (!firebaseReady) {
+
+    firebaseStatus.innerText =
+      "Firebase not connected";
+
+    return;
+  }
+
+  try {
+
+    const commandRef =
+      ref(database, "control");
+
+    await set(commandRef, {
+
+      command: command,
+
+      timestamp: Date.now()
+
+    });
+
+    firebaseStatus.innerText =
+      "Sent to Firebase: " + command;
+
+    console.log(
+      "Command sent:",
+      command
+    );
+
+  }
+  catch(error) {
+
+    firebaseStatus.innerText =
+      "Firebase write failed";
+
+    console.error(
+      "Firebase write error:",
+      error
+    );
+
+  }
+
+}
+
+
+// ================= SPEECH RECOGNITION =================
 
 const SpeechRecognition =
   window.SpeechRecognition ||
@@ -139,159 +289,264 @@ const SpeechRecognition =
 
 let recognition;
 
-const statusText = document.getElementById("status");
-const speechText = document.getElementById("speech");
-const commandText = document.getElementById("command");
-const micButton = document.getElementById("micButton");
-
 if (SpeechRecognition) {
 
-  recognition = new SpeechRecognition();
+  recognition =
+    new SpeechRecognition();
 
-  recognition.lang = "en-US";
-  recognition.continuous = false;
-  recognition.interimResults = false;
+  recognition.lang =
+    "en-US";
 
-  recognition.onstart = function() {
+  recognition.continuous =
+    false;
 
-    statusText.innerText = "LISTENING...";
-    speechText.innerText = "...";
-    commandText.innerText = "-";
+  recognition.interimResults =
+    false;
 
-    micButton.classList.add("listening");
+
+  recognition.onstart =
+  function() {
+
+    statusText.innerText =
+      "LISTENING...";
+
+    speechText.innerText =
+      "...";
+
+    commandText.innerText =
+      "-";
+
+    micButton.classList.add(
+      "listening"
+    );
+
   };
 
-  recognition.onresult = function(event) {
+
+  recognition.onresult =
+  function(event) {
 
     let text =
-      event.results[0][0].transcript
+      event.results[0][0]
+      .transcript
       .toLowerCase()
       .trim();
 
-    speechText.innerText = text;
+    speechText.innerText =
+      text;
 
     processCommand(text);
+
   };
 
-  recognition.onerror = function(event) {
+
+  recognition.onerror =
+  function(event) {
 
     statusText.innerText =
       "ERROR: " + event.error;
 
-    micButton.classList.remove("listening");
+    micButton.classList.remove(
+      "listening"
+    );
+
   };
 
-  recognition.onend = function() {
 
-    micButton.classList.remove("listening");
+  recognition.onend =
+  function() {
 
-    if (statusText.innerText === "LISTENING...") {
-      statusText.innerText = "Tap microphone";
+    micButton.classList.remove(
+      "listening"
+    );
+
+    if (
+      statusText.innerText ===
+      "LISTENING..."
+    ) {
+
+      statusText.innerText =
+        "Tap microphone";
+
     }
+
   };
 
 }
+
 else {
 
   statusText.innerText =
     "Speech recognition not supported";
+
 }
 
 
-// =====================================================
-// START LISTENING
-// =====================================================
+// ================= START MIC =================
 
-function startListening() {
+window.startListening =
+function() {
 
   if (!recognition) {
     return;
   }
 
   try {
+
     recognition.start();
+
   }
   catch(error) {
+
     console.log(error);
+
   }
-}
+
+};
 
 
-// =====================================================
-// PROCESS VOICE COMMAND
-// =====================================================
+// ================= PROCESS COMMAND =================
 
 function processCommand(text) {
 
-  text = text.toLowerCase().trim();
-
-  // ===================================================
-  // NORMALIZE SWITCH ONE
-  // ===================================================
-  text = text.replace(/\bswitch 1\b/g, "switch one");
-  text = text.replace(/\bswitch won\b/g, "switch one");
-
-  // ===================================================
-  // NORMALIZE SWITCH TWO
-  // ===================================================
-  text = text.replace(/\bswitch 2\b/g, "switch two");
-  text = text.replace(/\bswitch to\b/g, "switch two");
-  text = text.replace(/\bswitch too\b/g, "switch two");
+  text =
+    text
+    .toLowerCase()
+    .trim();
 
 
-  // ===================================================
-  // SWITCH 1 ON
-  // ===================================================
-  if (text.includes("switch one on")) {
+  // ================= NORMALIZE SWITCH ONE =================
 
-    statusText.innerText = "COMMAND RECOGNIZED";
-    commandText.innerText = "SWITCH 1 ON";
+  text =
+    text.replace(
+      /\bswitch 1\b/g,
+      "switch one"
+    );
+
+  text =
+    text.replace(
+      /\bswitch won\b/g,
+      "switch one"
+    );
+
+
+  // ================= NORMALIZE SWITCH TWO =================
+
+  text =
+    text.replace(
+      /\bswitch 2\b/g,
+      "switch two"
+    );
+
+  text =
+    text.replace(
+      /\bswitch to\b/g,
+      "switch two"
+    );
+
+  text =
+    text.replace(
+      /\bswitch too\b/g,
+      "switch two"
+    );
+
+
+  // ================= SWITCH 1 ON =================
+
+  if (
+    text.includes(
+      "switch one on"
+    )
+  ) {
+
+    statusText.innerText =
+      "COMMAND RECOGNIZED";
+
+    commandText.innerText =
+      "SWITCH 1 ON";
+
+    sendCommand(
+      "SWITCH_1_ON"
+    );
 
   }
 
 
-  // ===================================================
-  // SWITCH 1 OFF
-  // ===================================================
-  else if (text.includes("switch one off")) {
+  // ================= SWITCH 1 OFF =================
 
-    statusText.innerText = "COMMAND RECOGNIZED";
-    commandText.innerText = "SWITCH 1 OFF";
+  else if (
+    text.includes(
+      "switch one off"
+    )
+  ) {
 
-  }
+    statusText.innerText =
+      "COMMAND RECOGNIZED";
 
+    commandText.innerText =
+      "SWITCH 1 OFF";
 
-  // ===================================================
-  // SWITCH 2 ON
-  // ===================================================
-  else if (text.includes("switch two on")) {
-
-    statusText.innerText = "COMMAND RECOGNIZED";
-    commandText.innerText = "SWITCH 2 ON";
-
-  }
-
-
-  // ===================================================
-  // SWITCH 2 OFF
-  // ===================================================
-  else if (text.includes("switch two off")) {
-
-    statusText.innerText = "COMMAND RECOGNIZED";
-    commandText.innerText = "SWITCH 2 OFF";
+    sendCommand(
+      "SWITCH_1_OFF"
+    );
 
   }
 
 
-  // ===================================================
-  // UNKNOWN COMMAND
-  // ===================================================
+  // ================= SWITCH 2 ON =================
+
+  else if (
+    text.includes(
+      "switch two on"
+    )
+  ) {
+
+    statusText.innerText =
+      "COMMAND RECOGNIZED";
+
+    commandText.innerText =
+      "SWITCH 2 ON";
+
+    sendCommand(
+      "SWITCH_2_ON"
+    );
+
+  }
+
+
+  // ================= SWITCH 2 OFF =================
+
+  else if (
+    text.includes(
+      "switch two off"
+    )
+  ) {
+
+    statusText.innerText =
+      "COMMAND RECOGNIZED";
+
+    commandText.innerText =
+      "SWITCH 2 OFF";
+
+    sendCommand(
+      "SWITCH_2_OFF"
+    );
+
+  }
+
+
+  // ================= UNKNOWN COMMAND =================
+
   else {
 
-    statusText.innerText = "COMMAND NOT RECOGNIZED";
-    commandText.innerText = "-";
+    statusText.innerText =
+      "COMMAND NOT RECOGNIZED";
+
+    commandText.innerText =
+      "-";
 
   }
+
 }
 
 </script>
