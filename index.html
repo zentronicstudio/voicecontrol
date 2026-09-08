@@ -156,10 +156,10 @@ if (SpeechRecognition) {
 
     statusText.innerText = "LISTENING...";
     speechText.innerText = "...";
+    commandText.innerText = "-";
 
     micButton.classList.add("listening");
   };
-
 
   recognition.onresult = function(event) {
 
@@ -173,7 +173,6 @@ if (SpeechRecognition) {
     processCommand(text);
   };
 
-
   recognition.onerror = function(event) {
 
     statusText.innerText =
@@ -181,7 +180,6 @@ if (SpeechRecognition) {
 
     micButton.classList.remove("listening");
   };
-
 
   recognition.onend = function() {
 
@@ -193,7 +191,6 @@ if (SpeechRecognition) {
   };
 
 }
-
 else {
 
   statusText.innerText =
@@ -226,11 +223,25 @@ function startListening() {
 
 function processCommand(text) {
 
-  // Accept number variations
-  text = text.replace(/switch 1/g, "switch one");
-  text = text.replace(/switch 2/g, "switch two");
+  text = text.toLowerCase().trim();
+
+  // ===================================================
+  // NORMALIZE SWITCH ONE
+  // ===================================================
+  text = text.replace(/\bswitch 1\b/g, "switch one");
+  text = text.replace(/\bswitch won\b/g, "switch one");
+
+  // ===================================================
+  // NORMALIZE SWITCH TWO
+  // ===================================================
+  text = text.replace(/\bswitch 2\b/g, "switch two");
+  text = text.replace(/\bswitch to\b/g, "switch two");
+  text = text.replace(/\bswitch too\b/g, "switch two");
 
 
+  // ===================================================
+  // SWITCH 1 ON
+  // ===================================================
   if (text.includes("switch one on")) {
 
     statusText.innerText = "COMMAND RECOGNIZED";
@@ -238,6 +249,10 @@ function processCommand(text) {
 
   }
 
+
+  // ===================================================
+  // SWITCH 1 OFF
+  // ===================================================
   else if (text.includes("switch one off")) {
 
     statusText.innerText = "COMMAND RECOGNIZED";
@@ -245,6 +260,10 @@ function processCommand(text) {
 
   }
 
+
+  // ===================================================
+  // SWITCH 2 ON
+  // ===================================================
   else if (text.includes("switch two on")) {
 
     statusText.innerText = "COMMAND RECOGNIZED";
@@ -252,6 +271,10 @@ function processCommand(text) {
 
   }
 
+
+  // ===================================================
+  // SWITCH 2 OFF
+  // ===================================================
   else if (text.includes("switch two off")) {
 
     statusText.innerText = "COMMAND RECOGNIZED";
@@ -259,6 +282,10 @@ function processCommand(text) {
 
   }
 
+
+  // ===================================================
+  // UNKNOWN COMMAND
+  // ===================================================
   else {
 
     statusText.innerText = "COMMAND NOT RECOGNIZED";
