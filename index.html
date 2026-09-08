@@ -1,532 +1,687 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Voice Control</title>
+  <title>Voice Control</title>
 
-<style>
-* {
-  box-sizing: border-box;
-}
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f3f4f6;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background: #f3f4f6;
+      font-family: Arial, sans-serif;
+    }
 
-.container {
-  width: 100%;
-  max-width: 420px;
-  text-align: center;
-}
+    .container {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
 
-h1 {
-  font-size: 30px;
-  margin-bottom: 25px;
-}
+    h1 {
+      margin-bottom: 25px;
+      font-size: 30px;
+    }
 
-.card {
-  background: white;
-  border-radius: 24px;
-  padding: 30px 20px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.10);
-}
+    .card {
+      background: white;
+      padding: 30px 20px;
+      border-radius: 24px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+    }
 
-.mic {
-  width: 140px;
-  height: 140px;
-  border: none;
-  border-radius: 50%;
-  background: #111827;
-  color: white;
-  font-size: 55px;
-  cursor: pointer;
-}
+    .mic {
+      width: 140px;
+      height: 140px;
+      border: none;
+      border-radius: 50%;
+      background: #111827;
+      color: white;
+      font-size: 55px;
+      cursor: pointer;
+    }
 
-.mic:active {
-  transform: scale(0.95);
-}
+    .mic:active {
+      transform: scale(0.95);
+    }
 
-.listening {
-  background: #dc2626;
-}
+    .listening {
+      background: #dc2626;
+    }
 
-#status {
-  margin-top: 25px;
-  font-size: 22px;
-  font-weight: bold;
-}
+    #status {
+      margin-top: 25px;
+      font-size: 22px;
+      font-weight: bold;
+    }
 
-#speech {
-  margin-top: 15px;
-  min-height: 35px;
-  font-size: 20px;
-  color: #374151;
-}
+    #speech {
+      margin-top: 15px;
+      min-height: 35px;
+      font-size: 20px;
+      color: #374151;
+    }
 
-.result {
-  margin-top: 25px;
-  padding: 18px;
-  background: #f3f4f6;
-  border-radius: 15px;
-}
+    .result {
+      margin-top: 25px;
+      padding: 18px;
+      background: #f3f4f6;
+      border-radius: 15px;
+    }
 
-#command {
-  font-size: 24px;
-  font-weight: bold;
-}
+    #command {
+      font-size: 24px;
+      font-weight: bold;
+    }
 
-#firebaseStatus {
-  margin-top: 15px;
-  font-size: 14px;
-  color: #6b7280;
-}
+    #firebaseStatus {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #6b7280;
+    }
 
-.help {
-  margin-top: 25px;
-  color: #6b7280;
-  line-height: 1.8;
-  font-size: 15px;
-}
-</style>
+    .help {
+      margin-top: 25px;
+      font-size: 15px;
+      line-height: 1.8;
+      color: #6b7280;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="container">
+  <div class="container">
 
-  <h1>Voice Control</h1>
+    <h1>Voice Control</h1>
 
-  <div class="card">
+    <div class="card">
 
-    <button class="mic" id="micButton" onclick="startListening()">
-      🎤
-    </button>
+      <button
+        class="mic"
+        id="micButton"
+        onclick="startListening()">
+        🎤
+      </button>
 
-    <div id="status">
-      Tap microphone
-    </div>
+      <div id="status">
+        Tap microphone
+      </div>
 
-    <div id="speech">
-      -
-    </div>
+      <div id="speech">
+        -
+      </div>
 
-    <div class="result">
-      <div>COMMAND</div>
-      <br>
-      <div id="command">-</div>
-    </div>
+      <div class="result">
 
-    <div id="firebaseStatus">
-      Connecting Firebase...
-    </div>
+        <div>
+          COMMAND
+        </div>
 
-    <div class="help">
-      Say:<br>
-      Switch one on<br>
-      Switch one off<br>
-      Switch two on<br>
-      Switch two off
+        <br>
+
+        <div id="command">
+          -
+        </div>
+
+      </div>
+
+      <div id="firebaseStatus">
+        Connecting Firebase...
+      </div>
+
+      <div class="help">
+        Say:<br>
+        Switch one on<br>
+        Switch one off<br>
+        Switch two on<br>
+        Switch two off
+      </div>
+
     </div>
 
   </div>
 
-</div>
 
-<script type="module">
+  <script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    // =====================================================
+    // FIREBASE IMPORT
+    // =====================================================
 
-import {
-  getAuth,
-  signInAnonymously
-}
-from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-
-import {
-  getDatabase,
-  ref,
-  set
-}
-from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+    import {
+      initializeApp
+    }
+    from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 
 
-// ================= FIREBASE CONFIG =================
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBUL94M7hwuMFn19xzRP4MXhv1_ENIK4t0",
-  authDomain: "voice-command-9a039.firebaseapp.com",
-  databaseURL: "https://voice-command-9a039-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "voice-command-9a039",
-  storageBucket: "voice-command-9a039.firebasestorage.app",
-  messagingSenderId: "38586778701",
-  appId: "1:38586778701:web:5061e097bf3124e1cc8804"
-};
+    import {
+      getAuth,
+      signInAnonymously
+    }
+    from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
 
-// ================= FIREBASE INITIALIZE =================
-
-const app = initializeApp(firebaseConfig);
-
-const auth = getAuth(app);
-
-const database = getDatabase(app);
-
-let firebaseReady = false;
+    import {
+      getDatabase,
+      ref,
+      set
+    }
+    from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
 
 
-// ================= HTML ELEMENTS =================
+    // =====================================================
+    // FIREBASE CONFIG
+    // =====================================================
 
-const statusText =
-  document.getElementById("status");
+    const firebaseConfig = {
 
-const speechText =
-  document.getElementById("speech");
+      apiKey:
+        "AIzaSyBUL94M7hwuMFn19xzRP4MXhv1_ENIK4t0",
 
-const commandText =
-  document.getElementById("command");
+      authDomain:
+        "voice-command-9a039.firebaseapp.com",
 
-const micButton =
-  document.getElementById("micButton");
+      databaseURL:
+        "https://voice-command-9a039-default-rtdb.asia-southeast1.firebasedatabase.app",
 
-const firebaseStatus =
-  document.getElementById("firebaseStatus");
+      projectId:
+        "voice-command-9a039",
 
+      storageBucket:
+        "voice-command-9a039.firebasestorage.app",
 
-// ================= FIREBASE LOGIN =================
+      messagingSenderId:
+        "38586778701",
 
-signInAnonymously(auth)
-
-.then(() => {
-
-  firebaseReady = true;
-
-  firebaseStatus.innerText =
-    "Firebase Connected";
-
-  console.log(
-    "Firebase anonymous login success"
-  );
-
-})
-
-.catch((error) => {
-
-  firebaseReady = false;
-
-  firebaseStatus.innerText =
-    "Firebase Error";
-
-  console.error(
-    "Firebase login error:",
-    error
-  );
-
-});
+      appId:
+        "1:38586778701:web:5061e097bf3124e1cc8804"
+    };
 
 
-// ================= SEND COMMAND =================
+    // =====================================================
+    // FIREBASE START
+    // =====================================================
 
-async function sendCommand(command) {
+    const app =
+      initializeApp(firebaseConfig);
 
-  if (!firebaseReady) {
+    const auth =
+      getAuth(app);
 
-    firebaseStatus.innerText =
-      "Firebase not connected";
+    const database =
+      getDatabase(app);
 
-    return;
-  }
+    let firebaseReady =
+      false;
 
-  try {
 
-    const commandRef =
-      ref(database, "control");
+    // =====================================================
+    // HTML ELEMENTS
+    // =====================================================
 
-    await set(commandRef, {
+    const statusText =
+      document.getElementById("status");
 
-      command: command,
+    const speechText =
+      document.getElementById("speech");
 
-      // IMPORTANT:
-      // save timestamp as STRING
-      timestamp: Date.now().toString()
+    const commandText =
+      document.getElementById("command");
+
+    const micButton =
+      document.getElementById("micButton");
+
+    const firebaseStatus =
+      document.getElementById("firebaseStatus");
+
+
+    // =====================================================
+    // FIREBASE LOGIN
+    // =====================================================
+
+    signInAnonymously(auth)
+
+    .then(() => {
+
+      firebaseReady =
+        true;
+
+      firebaseStatus.innerText =
+        "Firebase Connected";
+
+      console.log(
+        "Firebase anonymous login success"
+      );
+
+    })
+
+    .catch((error) => {
+
+      firebaseReady =
+        false;
+
+      firebaseStatus.innerText =
+        "Firebase Error";
+
+      console.error(
+        "Firebase login error:",
+        error
+      );
 
     });
 
-    firebaseStatus.innerText =
-      "Sent to Firebase: " + command;
 
-    console.log(
-      "Command sent:",
-      command
-    );
+    // =====================================================
+    // SEND COMMAND
+    // =====================================================
 
-  }
-  catch(error) {
+    async function sendCommand(command) {
 
-    firebaseStatus.innerText =
-      "Firebase write failed";
+      if (!firebaseReady) {
 
-    console.error(
-      "Firebase write error:",
-      error
-    );
+        firebaseStatus.innerText =
+          "Firebase not connected";
 
-  }
-}
+        return;
+      }
 
 
-// ================= SPEECH RECOGNITION =================
+      try {
 
-const SpeechRecognition =
-  window.SpeechRecognition ||
-  window.webkitSpeechRecognition;
-
-let recognition;
-
-
-if (SpeechRecognition) {
-
-  recognition =
-    new SpeechRecognition();
-
-  recognition.lang =
-    "en-US";
-
-  recognition.continuous =
-    false;
-
-  recognition.interimResults =
-    false;
+        const commandRef =
+          ref(
+            database,
+            "control"
+          );
 
 
-  recognition.onstart =
-  function() {
+        // IMPORTANT:
+        // command_id is STRING
+        //
+        // Example:
+        // CMD_1788895127525
 
-    statusText.innerText =
-      "LISTENING...";
-
-    speechText.innerText =
-      "...";
-
-    commandText.innerText =
-      "-";
-
-    micButton.classList.add(
-      "listening"
-    );
-  };
+        const commandID =
+          "CMD_" +
+          Date.now().toString();
 
 
-  recognition.onresult =
-  function(event) {
+        await set(
+          commandRef,
+          {
 
-    let text =
-      event.results[0][0]
-      .transcript
-      .toLowerCase()
-      .trim();
+            command:
+              command,
 
-    speechText.innerText =
-      text;
+            command_id:
+              commandID
 
-    processCommand(text);
-  };
+          }
+        );
 
 
-  recognition.onerror =
-  function(event) {
-
-    statusText.innerText =
-      "ERROR: " + event.error;
-
-    micButton.classList.remove(
-      "listening"
-    );
-  };
+        firebaseStatus.innerText =
+          "Sent: " + command;
 
 
-  recognition.onend =
-  function() {
+        console.log(
+          "Command:",
+          command
+        );
 
-    micButton.classList.remove(
-      "listening"
-    );
 
-    if (
-      statusText.innerText ===
-      "LISTENING..."
-    ) {
+        console.log(
+          "Command ID:",
+          commandID
+        );
+
+      }
+
+      catch(error) {
+
+        firebaseStatus.innerText =
+          "Firebase write failed";
+
+
+        console.error(
+          "Firebase write error:",
+          error
+        );
+
+      }
+    }
+
+
+    // =====================================================
+    // SPEECH RECOGNITION
+    // =====================================================
+
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+
+    let recognition;
+
+
+    if (SpeechRecognition) {
+
+      recognition =
+        new SpeechRecognition();
+
+
+      recognition.lang =
+        "en-US";
+
+
+      recognition.continuous =
+        false;
+
+
+      recognition.interimResults =
+        false;
+
+
+      // ===================================================
+      // START LISTENING
+      // ===================================================
+
+      recognition.onstart =
+      function() {
+
+        statusText.innerText =
+          "LISTENING...";
+
+        speechText.innerText =
+          "...";
+
+        commandText.innerText =
+          "-";
+
+        micButton.classList.add(
+          "listening"
+        );
+      };
+
+
+      // ===================================================
+      // RESULT
+      // ===================================================
+
+      recognition.onresult =
+      function(event) {
+
+        let text =
+          event
+          .results[0][0]
+          .transcript
+          .toLowerCase()
+          .trim();
+
+
+        speechText.innerText =
+          text;
+
+
+        processCommand(
+          text
+        );
+      };
+
+
+      // ===================================================
+      // ERROR
+      // ===================================================
+
+      recognition.onerror =
+      function(event) {
+
+        statusText.innerText =
+          "ERROR: " +
+          event.error;
+
+
+        micButton.classList.remove(
+          "listening"
+        );
+      };
+
+
+      // ===================================================
+      // END
+      // ===================================================
+
+      recognition.onend =
+      function() {
+
+        micButton.classList.remove(
+          "listening"
+        );
+
+
+        if (
+          statusText.innerText ===
+          "LISTENING..."
+        ) {
+
+          statusText.innerText =
+            "Tap microphone";
+        }
+      };
+    }
+
+    else {
 
       statusText.innerText =
-        "Tap microphone";
+        "Speech recognition not supported";
     }
-  };
-}
-
-else {
-
-  statusText.innerText =
-    "Speech recognition not supported";
-}
 
 
-// ================= START MIC =================
+    // =====================================================
+    // START MIC BUTTON
+    // =====================================================
 
-window.startListening =
-function() {
+    window.startListening =
+    function() {
 
-  if (!recognition) {
-    return;
-  }
+      if (!recognition) {
 
-  try {
-
-    recognition.start();
-
-  }
-  catch(error) {
-
-    console.log(error);
-  }
-};
+        return;
+      }
 
 
-// ================= PROCESS COMMAND =================
+      try {
 
-function processCommand(text) {
+        recognition.start();
 
-  text =
-    text
-    .toLowerCase()
-    .trim();
+      }
 
+      catch(error) {
 
-  // normalize switch one
-  text =
-    text.replace(
-      /\bswitch 1\b/g,
-      "switch one"
-    );
+        console.log(error);
 
-  text =
-    text.replace(
-      /\bswitch won\b/g,
-      "switch one"
-    );
+      }
+    };
 
 
-  // normalize switch two
-  text =
-    text.replace(
-      /\bswitch 2\b/g,
-      "switch two"
-    );
+    // =====================================================
+    // PROCESS VOICE
+    // =====================================================
 
-  text =
-    text.replace(
-      /\bswitch to\b/g,
-      "switch two"
-    );
+    function processCommand(text) {
 
-  text =
-    text.replace(
-      /\bswitch too\b/g,
-      "switch two"
-    );
+      text =
+        text
+        .toLowerCase()
+        .trim();
 
 
-  if (
-    text.includes(
-      "switch one on"
-    )
-  ) {
+      // ===================================================
+      // NORMALIZE "ONE"
+      // ===================================================
 
-    statusText.innerText =
-      "COMMAND RECOGNIZED";
-
-    commandText.innerText =
-      "SWITCH 1 ON";
-
-    sendCommand(
-      "SWITCH_1_ON"
-    );
-  }
+      text =
+        text.replace(
+          /\bswitch 1\b/g,
+          "switch one"
+        );
 
 
-  else if (
-    text.includes(
-      "switch one off"
-    )
-  ) {
-
-    statusText.innerText =
-      "COMMAND RECOGNIZED";
-
-    commandText.innerText =
-      "SWITCH 1 OFF";
-
-    sendCommand(
-      "SWITCH_1_OFF"
-    );
-  }
+      text =
+        text.replace(
+          /\bswitch won\b/g,
+          "switch one"
+        );
 
 
-  else if (
-    text.includes(
-      "switch two on"
-    )
-  ) {
+      // ===================================================
+      // NORMALIZE "TWO"
+      // ===================================================
 
-    statusText.innerText =
-      "COMMAND RECOGNIZED";
-
-    commandText.innerText =
-      "SWITCH 2 ON";
-
-    sendCommand(
-      "SWITCH_2_ON"
-    );
-  }
+      text =
+        text.replace(
+          /\bswitch 2\b/g,
+          "switch two"
+        );
 
 
-  else if (
-    text.includes(
-      "switch two off"
-    )
-  ) {
-
-    statusText.innerText =
-      "COMMAND RECOGNIZED";
-
-    commandText.innerText =
-      "SWITCH 2 OFF";
-
-    sendCommand(
-      "SWITCH_2_OFF"
-    );
-  }
+      text =
+        text.replace(
+          /\bswitch to\b/g,
+          "switch two"
+        );
 
 
-  else {
+      text =
+        text.replace(
+          /\bswitch too\b/g,
+          "switch two"
+        );
 
-    statusText.innerText =
-      "COMMAND NOT RECOGNIZED";
 
-    commandText.innerText =
-      "-";
-  }
-}
+      // ===================================================
+      // SWITCH 1 ON
+      // ===================================================
 
-</script>
+      if (
+        text.includes(
+          "switch one on"
+        )
+      ) {
+
+        statusText.innerText =
+          "COMMAND RECOGNIZED";
+
+
+        commandText.innerText =
+          "SWITCH 1 ON";
+
+
+        sendCommand(
+          "SWITCH_1_ON"
+        );
+      }
+
+
+      // ===================================================
+      // SWITCH 1 OFF
+      // ===================================================
+
+      else if (
+        text.includes(
+          "switch one off"
+        )
+      ) {
+
+        statusText.innerText =
+          "COMMAND RECOGNIZED";
+
+
+        commandText.innerText =
+          "SWITCH 1 OFF";
+
+
+        sendCommand(
+          "SWITCH_1_OFF"
+        );
+      }
+
+
+      // ===================================================
+      // SWITCH 2 ON
+      // ===================================================
+
+      else if (
+        text.includes(
+          "switch two on"
+        )
+      ) {
+
+        statusText.innerText =
+          "COMMAND RECOGNIZED";
+
+
+        commandText.innerText =
+          "SWITCH 2 ON";
+
+
+        sendCommand(
+          "SWITCH_2_ON"
+        );
+      }
+
+
+      // ===================================================
+      // SWITCH 2 OFF
+      // ===================================================
+
+      else if (
+        text.includes(
+          "switch two off"
+        )
+      ) {
+
+        statusText.innerText =
+          "COMMAND RECOGNIZED";
+
+
+        commandText.innerText =
+          "SWITCH 2 OFF";
+
+
+        sendCommand(
+          "SWITCH_2_OFF"
+        );
+      }
+
+
+      // ===================================================
+      // UNKNOWN
+      // ===================================================
+
+      else {
+
+        statusText.innerText =
+          "COMMAND NOT RECOGNIZED";
+
+
+        commandText.innerText =
+          "-";
+      }
+    }
+
+  </script>
 
 </body>
 </html>
